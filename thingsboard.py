@@ -45,33 +45,4 @@ client.loop_start()
 client.on_subscribe = subscribed
 client.on_message = recv_message
 
-entry_dict = {
-    "temperature": "",
-    "humidity": "",
-    "intensity": "",
-}
-control_dict = {
-    "Led1_state": "",
-    "Led2_state": "",
-    "Fan1_state": "",
-    "Fan2_state": "",
-}
-
-while True:
-    temp = random.randint(200,800)/10
-    hum = random.randint(0,100)
-    lux = random.randint(0,100)
-
-    entry_dict["temperature"] = temp
-    entry_dict["humidity"] = hum
-    entry_dict["intensity"] = lux
-    
-    print(json.dumps(entry_dict))
-   
-    # Automatic in gateway
-    client.publish("v1/devices/me/telemetry", json.dumps(entry_dict))
-    client.publish("v1/devices/me/attributes", json.dumps(entry_dict))
-
-    print(temp, " | ", hum, "|", lux)
-
-    time.sleep(5)
+client.loop_forever()
