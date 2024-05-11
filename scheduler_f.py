@@ -2,7 +2,7 @@ from task import *
 from private_task_1 import*
 from private_task_2 import*
 import time
-task = {"flow1":1,"flow2":2,"flow3":1, "water":5}
+task = {"flow1":2,"flow2":2,"flow3":1, "water":5}
 def setDevice(id, state):
     if id == 8: 
         id = "Pump"
@@ -11,14 +11,19 @@ def setDevice(id, state):
     else:
         print("Turn off Flow",id)
 def make_cycle(sche, task):
+  t1 = task['flow1']
+  t2 = task['flow1']+task['flow2']
+  t3 = task['flow1']+task['flow2']+task['flow3']
   sche.SCH_Add_Task(lambda: setDevice(1, True), 0, 0) # Turn on flow 1
-  sche.SCH_Add_Task(lambda: setDevice(1, False), 100, 0) # Turn off flow 1
-  sche.SCH_Add_Task(lambda: setDevice(2, True), 100, 0) # Turn on flow 2
-  sche.SCH_Add_Task(lambda: setDevice(2, False), 200, 0) # Turn off flow 2
-  sche.SCH_Add_Task(lambda: setDevice(3, True), 200, 0) # Turn on flow 3
-  sche.SCH_Add_Task(lambda: setDevice(3, False),300, 0) # Turn off flow 3
-  sche.SCH_Add_Task(lambda: setDevice(8, True), 300, 0) # Turn on pump
-  sche.SCH_Add_Task(lambda: setDevice(8, False), 1300, 0) # Turn off pump
+  sche.SCH_Add_Task(lambda: setDevice(1, False),t1*sche.TICK , 0) # Turn off flow 1
+  sche.SCH_Add_Task(lambda: setDevice(2, True), t1*sche.TICK, 0) # Turn on flow 2
+  sche.SCH_Add_Task(lambda: setDevice(2, False), t2*sche.TICK, 0) # Turn off flow 2
+  sche.SCH_Add_Task(lambda: setDevice(3, True), t2*sche.TICK, 0) # Turn on flow 3
+  sche.SCH_Add_Task(lambda: setDevice(3, False),t3*sche.TICK, 0) # Turn off flow 3
+  sche.SCH_Add_Task(lambda: setDevice(8, True), t3*sche.TICK, 0) # Turn on pump
+  sche.SCH_Add_Task(lambda: setDevice(8, False), (t3+task['water'])*sche.TICK, 0) # Turn off pump
+  sche.SCH_Update()
+  sche.SCH_Dispatch_Tasks()
 
 
 
@@ -84,7 +89,7 @@ sche =  Scheduler()
 # sche.SCH_Add_Task(t,100,200)
 # sche.SCH_Add_Task(t, 100, 0)  # Turn on flow 1
 cnt =0
-make_cycle(sche, task)
+sche.SCH_Add_Task(lambda: make_cycle(sche, task), 0, 1000)
 while True:
     print(cnt)
     sche.SCH_Update()
