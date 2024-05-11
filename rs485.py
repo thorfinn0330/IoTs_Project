@@ -16,7 +16,7 @@ def getPort():
     return commPort
     # return "/dev/ttyUSB1"
 
-portName = "/dev/ttyUSB1"
+portName = getPort()
 print(portName)
 
 
@@ -42,22 +42,44 @@ def serial_read_data(ser):
     return 0
 
 
-relay1_ON  = [0, 6, 0, 0, 0, 255, 200, 91]
-relay1_OFF = [0, 6, 0, 0, 0, 0, 136, 27]
+relay_ON = [                                                                                                                                  
+      None,
+      [1, 6, 0, 0, 0, 255, 201, 138],  # Relay 1 ON
+      [2, 6, 0, 0, 0, 255, 201, 185],  # Relay 2 ON
+      [3, 6, 0, 0, 0, 255, 200, 104],  # Relay 3 ON
+      [4, 6, 0, 0, 0, 255, 201, 223],  # Relay 4 ON
+      [5, 6, 0, 0, 0, 255, 200, 14],   # Relay 5 ON
+      [6, 6, 0, 0, 0, 255, 200, 61],   # Relay 6 ON
+      [7, 6, 0, 0, 0, 255, 201, 236],  # Relay 7 ON
+      [8, 6, 0, 0, 0, 255, 201, 19],    # Relay 8 ON,
+    ]                                                                                                                                                  
+                                                                                                                                                       
+relay_OFF = [                                                                                                                                 
+      None,
+      [1, 6, 0, 0, 0, 0, 137, 202],    # Relay 1 OFF
+      [2, 6, 0, 0, 0, 0, 137, 249],    # Relay 2 OFF
+      [3, 6, 0, 0, 0, 0, 136, 40],     # Relay 3 OFF
+      [4, 6, 0, 0, 0, 0, 137, 159],    # Relay 4 OFF
+      [5, 6, 0, 0, 0, 0, 136, 78],     # Relay 5 OFF
+      [6, 6, 0, 0, 0, 0, 136, 125],    # Relay 6 OFF
+      [7, 6, 0, 0, 0, 0, 137, 172],    # Relay 7 OFF
+      [8, 6, 0, 0, 0, 0, 137, 83]      # Relay 8 OFF
+          ]
 
-def setDevice1(state):
+def setDevice(id, state):
     if state == True:
-        ser.write(relay1_ON)
+        ser.write(relay_ON[id])
     else:
-        ser.write(relay1_OFF)
+        ser.write(relay_OFF[id])
     time.sleep(1)
     print(serial_read_data(ser))
 
 while True:
-    setDevice1(True)
-    time.sleep(2)
-    setDevice1(False)
-    time.sleep(2)
+    for i in range(1,8):
+        setDevice(i, True)
+        time.sleep(2)
+        setDevice(i, False)
+        time.sleep(2)
 
 soil_temperature =[1, 3, 0, 6, 0, 1, 100, 11]
 def readTemperature():
