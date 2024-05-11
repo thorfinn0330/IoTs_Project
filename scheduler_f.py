@@ -2,14 +2,45 @@ from task import *
 from private_task_1 import*
 from private_task_2 import*
 import time
-task = {"flow1":2,"flow2":2,"flow3":1, "water":5}
-def setDevice(id, state):
-    if id == 8: 
-        id = "Pump"
+relay_ON = [                                                                                                                                  
+      None,
+      [1, 6, 0, 0, 0, 255, 201, 138],  # Relay 1 ON
+      [2, 6, 0, 0, 0, 255, 201, 185],  # Relay 2 ON
+      [3, 6, 0, 0, 0, 255, 200, 104],  # Relay 3 ON
+      [4, 6, 0, 0, 0, 255, 201, 223],  # Relay 4 ON
+      [5, 6, 0, 0, 0, 255, 200, 14],   # Relay 5 ON
+      [6, 6, 0, 0, 0, 255, 200, 61],   # Relay 6 ON
+      [7, 6, 0, 0, 0, 255, 201, 236],  # Relay 7 ON
+      [8, 6, 0, 0, 0, 255, 201, 19],    # Relay 8 ON,
+    ]                                                                                                                                                  
+                                                                                                                                                       
+relay_OFF = [                                                                                                                                 
+      None,
+      [1, 6, 0, 0, 0, 0, 137, 202],    # Relay 1 OFF
+      [2, 6, 0, 0, 0, 0, 137, 249],    # Relay 2 OFF
+      [3, 6, 0, 0, 0, 0, 136, 40],     # Relay 3 OFF
+      [4, 6, 0, 0, 0, 0, 137, 159],    # Relay 4 OFF
+      [5, 6, 0, 0, 0, 0, 136, 78],     # Relay 5 OFF
+      [6, 6, 0, 0, 0, 0, 136, 125],    # Relay 6 OFF
+      [7, 6, 0, 0, 0, 0, 137, 172],    # Relay 7 OFF
+      [8, 6, 0, 0, 0, 0, 137, 83]      # Relay 8 OFF
+          ]
+
+def setDevice(id, state): 
     if state == True:
-        print("Turn on Flow",id)
+        print(relay_ON[id], "--------")
     else:
-        print("Turn off Flow",id)
+        print(relay_OFF[id], "--------")
+    print("Turn ", "On" if state == True else "Off", "RELAY ", id)
+
+task = {"flow1":2,"flow2":2,"flow3":1, "water":5}
+# def setDevice(id, state):
+#     if id == 8: 
+#         id = "Pump"
+#     if state == True:
+#         print("Turn on Flow",id)
+#     else:
+#         print("Turn off Flow",id)
 def make_cycle(sche, task):
   t1 = task['flow1']
   t2 = task['flow1']+task['flow2']
