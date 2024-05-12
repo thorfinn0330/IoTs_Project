@@ -22,7 +22,7 @@ print(portName)
 
 
 try:
-    ser = serial.Serial(port=portName, baudrate=115200)
+    ser = serial.Serial(port=portName, baudrate=9600)
     print("Open successfully")
 except:
     print("Can not open the port")

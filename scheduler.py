@@ -4,7 +4,7 @@ import random
 from queue import Queue
 import sys
 from Adafruit_IO import MQTTClient
-
+from scheduler_f import *
 TIMEOUT = 5
 TIME_FLOW1 = 1
 TIME_FLOW2 = 1
@@ -24,11 +24,11 @@ task = {
 jsonObj = {
     "task": ""
 }
-dataStrs = []
+dataStrs = ['{"flow1":6,"flow2":9,"flow3":6, "water":7.5,"isActive":true,"areaSelector":4,"schedulerName":"LỊCH TƯỚI 3","startTime":"00:20","stopTime":"15:30"}']
 
 AIO_FEED_ID = ["schedule"]
 AIO_USERNAME = "smartfarm0330"
-AIO_KEY = "aio_EDId92jShTaHS0cxXtZK5D3PgQQz"
+AIO_KEY = "aio_IbEB02whNTMDEMZZW5Hq6i9ErTtp"
 
 def connected(client):
     print("Connected successfully")
@@ -49,13 +49,13 @@ def message(client, feed_id, payload):
 
    
 
-client = MQTTClient(AIO_USERNAME, AIO_KEY)
-client.on_connect = connected
-client.on_disconnect = disconnected
-client.on_message = message
-client.on_subscribe = subcribe
-client.connect()
-client.loop_background()
+# client = MQTTClient(AIO_USERNAME, AIO_KEY)
+# client.on_connect = connected
+# client.on_disconnect = disconnected
+# client.on_message = message
+# client.on_subscribe = subcribe
+# client.connect()
+# client.loop_background()
 def getTime():
     # Get current time in seconds
     current_time = time.time()
@@ -96,6 +96,7 @@ def compare_times(start_time, stop_time):
     return True
 def calculate_loads(task):
     task["loads"] = task["flow1"]*TIME_FLOW1 + task["flow2"]*TIME_FLOW2 + task["flow3"]*TIME_FLOW3 + task["water"]*TIME_PUMP*2
+    return task['loads']
 def calculate_priority(task):
     h, m , strTime= getTime()
     sh, sm = task["stopTime"].split(":")
@@ -149,7 +150,7 @@ dataStr2 = '{"flow1":20,"flow2":30,"flow3":50, "water":20,"isActive":true,"areaS
 def main():
     
     h, m, strTime = getTime()
-   
+    sche =  Scheduler()
 
 
     # Chuyển đổi dataStr sang JSON
@@ -193,12 +194,31 @@ def main():
             q = sort_schedules(q)
             #print(q)
         
-        i = 1
-        for task in tasks:
-        
-            print("Task ",i,": ",task)
-            i+=1
-        time.sleep(10)
+        i = 0
+        cnt = 0
+        loads = 0
+        while i < len(tasks):
+            print(cnt)
+            task = tasks[i] 
+            if sche.SCH_Check():
+                print("Task ",i,": ",task)
+
+                sche.SCH_Add_Task(lambda: make_cycle(sche, task), 0, 0)
+                i+=1
+                loads += calculate_loads(task)
+            sche.SCH_Update()
+            sche.SCH_Dispatch_Tasks()
+            time.sleep(0.1) 
+            cnt +=1
+            print("size: ",sche.SCH_Size(), "-----")   
+        while sche.SCH_Size():
+            print(cnt)
+            sche.SCH_Update()
+            sche.SCH_Dispatch_Tasks()
+            time.sleep(0.1) 
+            cnt +=1
+        print("-----------------------Test end--------------------")    
+        time.sleep(20)
 
 if __name__ == '__main__':
     main()
