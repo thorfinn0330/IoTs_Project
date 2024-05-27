@@ -1,0 +1,21 @@
+TIMEOUT = 5
+TIME_FLOW1 = 1
+TIME_FLOW2 = 1
+TIME_FLOW3 = 1
+TIME_PUMP = 10
+
+#MQTT 
+AIO_FEED_ID = ["schedule"]
+AIO_USERNAME = "smartfarm0330"
+AIO_KEY = "aio_pUsN46FkD5vOcTjni8IYOMNfplvG"
+
+#State
+INIT = 0
+MIXER_1 = 1
+MIXER_2 = 2
+MIXER_3 = 3
+PUMP_IN = 4
+SELECTOR = 5
+PUMP_OUT = 6
+FINAL = 7
+ERROR = 8
