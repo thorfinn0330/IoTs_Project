@@ -7,7 +7,7 @@ TIME_PUMP = 10
 #MQTT 
 AIO_FEED_ID = ["schedule"]
 AIO_USERNAME = "smartfarm0330"
-AIO_KEY = "aio_pUsN46FkD5vOcTjni8IYOMNfplvG"
+AIO_KEY = "aio_lxQW84cmRkPS3Hmn102E1pFJey3u"
 
 #State
 INIT = 0

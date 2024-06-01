@@ -15,11 +15,9 @@ if __name__ == "__main__":
         
     #     userScheduler.US.printL()
     #     while not CM4Scheduler.scheduler.getState():
-        if (not userScheduler.US.isEmptyTask()) and (userScheduler.US.isDoneTask()) and (userScheduler.US.active_scheduler[0]['loads']>0):
-            task = userScheduler.US.makeTask()
-            CM4Scheduler.add_new_fsm_task(CM4Scheduler.scheduler, task)
-            for s in userScheduler.US.active_scheduler:
-                print(s["schedulerName"], s)
+        if userScheduler.US.isReadyforNewTask():
+            CM4Scheduler.add_new_fsm_task(CM4Scheduler.scheduler,  userScheduler.US.makeTask())
+            
 
         CM4Scheduler.scheduler.SCH_Update()
         CM4Scheduler.scheduler.SCH_Dispatch_Tasks()

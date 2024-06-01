@@ -144,7 +144,9 @@ class UserScheduler:
     def doneTask(self):
         self.in_progress = False  
     def startTask(self):
-        self.in_progress = True      
+        self.in_progress = True 
+    def isReadyforNewTask(self):
+        return (not self.isEmptyTask()) and (self.isDoneTask()) and (self.active_scheduler[0]['loads']>0)     
     def printL(self):
         print("________", self.active_scheduler)
 US = UserScheduler()
