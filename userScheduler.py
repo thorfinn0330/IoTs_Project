@@ -94,6 +94,7 @@ class UserScheduler:
         task["flow2"] = schedule["flow2"]*rate
         task["flow3"] = schedule["flow3"]*rate
         task["water"] = schedule["water"]*rate
+        task["id"] = schedule["_id"]
         task["areaSelector"] = schedule["areaSelector"]
         task["schedulerName"] = schedule["schedulerName"]
         schedule["flow1"] -= task["flow1"]
@@ -115,7 +116,7 @@ class UserScheduler:
         else:
             self.cnt+=1
             print("___________")
-            task = { "schedulerName":"","flow1":0,"flow2":0,"flow3":0, "water":0}
+            task = {"id":"", "schedulerName":"","flow1":0,"flow2":0,"flow3":0, "water":0}
             i=0
             while self.active_scheduler[i]["loads"] - 0 <= 0.0001:
                 i+=1
