@@ -1,6 +1,7 @@
 import time
 from constants import *
 from userScheduler import*
+from MQTTClient import*
 from enum import Enum
 
 from task import*
@@ -122,23 +123,36 @@ class FSM:
             self.scheduler.SCH_Add_Task(lambda: self.scheduler.setState(False), 0, 0)
 
             self.scheduler.SCH_Add_Task(lambda: self.setDevice(1, True,self.t1), 0, 0)
+            mqttClientHelper.publishState(self.task, "flow1", True)
+
         elif self.state == MIXER_1 :
             # if self.success:
+                mqttClientHelper.publishState(self.task, "flow1", False)
                 self.scheduler.SCH_Add_Task(lambda: self.setDevice(1, False,0), 0, 0)
 
                 self.scheduler.SCH_Add_Task(lambda: self.setDevice(2, True, self.t2), 0, 0)
+                mqttClientHelper.publishState(self.task, "flow2", True)
+
         elif self.state == MIXER_2 :
             # if self.success:
+                mqttClientHelper.publishState(self.task, "flow2", False)
+
                 self.scheduler.SCH_Add_Task(lambda: self.setDevice(2, False,0), 0, 0)
 
                 self.scheduler.SCH_Add_Task(lambda: self.setDevice(3, True, self.t3), 0, 0)
+                mqttClientHelper.publishState(self.task, "flow3", True)
         elif self.state == MIXER_3:
             # if self.success:
+                mqttClientHelper.publishState(self.task, "flow3", False)
+
                 self.scheduler.SCH_Add_Task(lambda: self.setDevice(3, False,0), 0, 0)
 
                 self.scheduler.SCH_Add_Task(lambda: self.setDevice(7, True, self.t4), 0, 0)
+                mqttClientHelper.publishState(self.task, "pump_in", True)
         elif self.state == PUMP_IN :
             # if self.success:
+                mqttClientHelper.publishState(self.task, "pump_in", False)
+
                 self.scheduler.SCH_Add_Task(lambda: self.setDevice(7, False,0), 0, 0)
                 self.scheduler.SCH_Add_Task(lambda: self.setDevice(self.selector, True, 1), 0, 0)
                 
@@ -146,8 +160,10 @@ class FSM:
             # if self.success:
                 self.scheduler.SCH_Add_Task(lambda: self.setDevice(self.selector, False,0), 0, 0)
                 self.scheduler.SCH_Add_Task(lambda: self.setDevice(8, True, self.t4), 0, 0)
+                mqttClientHelper.publishState(self.task, "pump_out", True)
         elif self.state == PUMP_OUT :
             # if self.success:
+                mqttClientHelper.publishState(self.task, "pump_out", False)
                 self.scheduler.SCH_Add_Task(lambda: self.setDevice(8, False,0), 0, 0)
                 self.success = True
                 self.scheduler.SCH_Add_Task(lambda: self.scheduler.setState(True), 0, 0)
@@ -156,6 +172,7 @@ class FSM:
         elif self.state == FINAL :
                 self.scheduler.SCH_Add_Task(US.doneTask,0,0)
                 print("END TASK: ", self.task)
+                mqttClientHelper.publishDoneTask(self.task)
                 self.next_state()
             #     self.success = self.setDevice(2, True, self.t2)
             # else:
