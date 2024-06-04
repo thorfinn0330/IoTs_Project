@@ -3,10 +3,11 @@ import MQTTClient
 import handleData
 import CM4Scheduler
 import userScheduler
-
+from serialCommunication import*
 if __name__ == "__main__":
     cnt =0
     CM4Scheduler.scheduler.SCH_Add_Task(userScheduler.US.updateActiveScheduler, 0, 1500)
+    # CM4Scheduler.scheduler.SCH_Add_Task(MQTTClient.mqttClientHelper.publishSensorsValue, 0, 500)
     while 1:
     # while (not userScheduler.US.isEmptyTask()) :
     #     print(1)

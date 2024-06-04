@@ -23,6 +23,7 @@ def handle_payload(payload):
         print(f"Schedule {id} added/updated.")
         #US.predictTasks()
         #print(US.active_scheduler)
+        return data['ack']
     except json.JSONDecodeError:
         print("Failed to decode payload")
 

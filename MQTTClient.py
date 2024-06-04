@@ -4,7 +4,7 @@ import sys
 import time
 import json
 import handleData
-
+from serialCommunication import*
 # Add a new task
 
 class MQTTClientHelper:
@@ -36,10 +36,30 @@ class MQTTClientHelper:
 
     def message(self, client, feed_id, payload):
         print("Received: " + payload + " , feed id: " + feed_id)
-        handleData.handle_payload(payload[2:])
+        header = payload[0]
+        if header == "1":
+            ack = handleData.handle_payload(payload[2:])
+            self.mqttClient.publish("schedule", f"9:{ack}")
+        elif header == "2":
+            pass
 
+    def publishSensorsValue(self):
+        temp, hum = ser.readAllSensors()        
+        message = f"3:{temp}:{hum}"
+        self.mqttClient.publish("schedule", message)
+    def publishDoneTask(self, task):
+        message = f"4:{task}"
+        self.mqttClient.publish("schedule", message)            
+    def publishState(self, task, key, isStart):
+        _id = task["id"]
+        if key == "pump_in" or key == "pump_out":
+            value = task["water"]
+        else:
+            value = task[key]
         
-                
-
+        if isStart:
+                value = 0
+        message = f"5:{_id}:{key}:{value}"
+        self.mqttClient.publish("schedule", message)     
 mqttClientHelper = MQTTClientHelper(False)
 
