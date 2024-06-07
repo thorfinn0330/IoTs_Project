@@ -10,7 +10,8 @@ from serialCommunication import*
 class MQTTClientHelper:
     def  __init__(self, _isUpdated):
         self.isUpdated = _isUpdated
-        self.mqttClient = MQTTClient(AIO_USERNAME, AIO_KEY)
+        AIO_KEY_NEW = AIO_KEY.replace("!", "")
+        self.mqttClient = MQTTClient(AIO_USERNAME, AIO_KEY_NEW)
         self.mqttClient.on_connect = self.connected
         self.mqttClient.on_disconnect = self.disconnected
         self.mqttClient.on_message = self.message

@@ -3,8 +3,8 @@ import serial.tools.list_ports
 from constants import*
 import random
 class serialCommunication:
-    def __init__(self) -> None:
-        pass
+    def __init__(self):
+       
         self.portName = self.getPort()
         try:
             self.ser = serial.Serial(port=self.portName, baudrate=9600)
@@ -70,14 +70,14 @@ class serialCommunication:
     
 
 ser = serialCommunication() 
-for i in range(1,9):
-    ser.setDevice(i, True)
-    time.sleep(1)
-    print(ser.readAllSensors())
-    time.sleep(1)
+# for i in range(1,9):
+#     serial.ser.setDevice(i, True)
+#     time.sleep(1)
+#     print(serial.ser.readAllSensors())
+#     time.sleep(1)
 
-print("------------------")
-for i in range(1,9):
-    ser.setDevice(i, False)
-    time.sleep(1)
-    print(ser.readAllSensors())
+# print("------------------")
+# for i in range(1,9):
+#     serial.ser.setDevice(i, False)
+#     time.sleep(1)
+#     print(serial.ser.readAllSensors())
