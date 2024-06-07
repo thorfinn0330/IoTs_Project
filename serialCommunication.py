@@ -70,3 +70,11 @@ class serialCommunication:
     
 
 ser = serialCommunication() 
+for i in range(1,9):
+    ser.setDevice(i, True)
+    time.sleep(1)
+
+print("------------------")
+for i in range(1,9):
+    ser.setDevice(i, False)
+    time.sleep(1)
