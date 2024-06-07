@@ -46,11 +46,11 @@ class serialCommunication:
         else:
             print(relay_OFF[id], "--------")
             self.ser.write(relay_OFF[id])
-        
+        time.sleep(1)
         print("Result: ", self.readData())
 
     def readTemperature(self):
-        return random.randint(20,40)
+        # return random.randint(20,40)
         self.readData()
         self.ser.write(soil_temperature)
         time.sleep(1) 
@@ -58,7 +58,7 @@ class serialCommunication:
         return self.readData()
 
     def readMoisture(self):
-        return random.randint(50,80)
+        # return random.randint(50,80)
         self.readData()
         self.ser.write(soil_moisture)
         time.sleep(1) 
@@ -73,8 +73,11 @@ ser = serialCommunication()
 for i in range(1,9):
     ser.setDevice(i, True)
     time.sleep(1)
+    print(ser.readAllSensors())
+    time.sleep(1)
 
 print("------------------")
 for i in range(1,9):
     ser.setDevice(i, False)
     time.sleep(1)
+    print(ser.readAllSensors())
