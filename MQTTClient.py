@@ -37,18 +37,19 @@ class MQTTClientHelper:
     def message(self, client, feed_id, payload):
         print("Received: " + payload + " , feed id: " + feed_id)
         header = payload[0]
-        if header == "1":
+        if header == HEADER_SERVER_SEND_TASK:
             ack = handleData.handle_payload(payload[2:])
-            self.mqttClient.publish("schedule", f"9:{ack}")
-        elif header == "2":
-            pass
+            self.mqttClient.publish("schedule", f"{HEADER_GATEWAY_SEND_ACK}:{ack}")
+        elif header == HEADER_SERVER_DELETE_TASK:
+            ack = handleData.deleteSchedule(payload[2:])
+            self.mqttClient.publish("schedule", f"{HEADER_GATEWAY_SEND_ACK}:{ack}")
 
     def publishSensorsValue(self):
         temp, hum = ser.readAllSensors()        
-        message = f"3:{temp}:{hum}"
+        message = f"{HEADER_GATEWAY_SEND_SENSOR_VALUE}:{temp}:{hum}"
         self.mqttClient.publish("schedule", message)
     def publishDoneTask(self, task):
-        message = f"4:{task}"
+        message = f"{HEADER_GATEWAY_SEND_TASK_STATUS}:{task}"
         self.mqttClient.publish("schedule", message)            
     def publishState(self, task, key, isStart):
         _id = task["id"]
@@ -59,7 +60,7 @@ class MQTTClientHelper:
         
         if isStart:
                 value = 0
-        message = f"5:{_id}:{key}:{value}"
+        message = f"{HEADER_GATEWAY_SEND_TASK_STATUS}:{_id}:{key}:{value}"
         self.mqttClient.publish("schedule", message)     
 mqttClientHelper = MQTTClientHelper(False)
 

@@ -11,22 +11,38 @@ def handle_payload(payload):
         id = data["_id"]
         data['isDone'] = False
         US.scheduler[id] = data
-        print("-----------ALL SCHEDULES-----------")
-        print(US.scheduler)
+        # print("-----------ALL SCHEDULES-----------")
+        # print(US.scheduler)
         US.removeFromActiveScheduler(id) #Xóa ra khỏi active_scheduler khi cập nhật/ nếu thêm mới thì k có trong active nên k làm gì
         US.updateActiveScheduler()
-        print("----------------ACTIVE--------------")
-        print(US.active_scheduler)
+        # print("----------------ACTIVE--------------")
+        # print(US.active_scheduler)
         US.updatePredictScheduler()
-        print("----------------PREDICT--------------")
-        print(US.predict_scheduler)
+        # print("----------------PREDICT--------------")
+        # print(US.predict_scheduler)
         print(f"Schedule {id} added/updated.")
         #US.predictTasks()
         #print(US.active_scheduler)
         return data['ack']
     except json.JSONDecodeError:
         print("Failed to decode payload")
-
+def deleteSchedule(payload):
+    try:
+        data = json.loads(payload)
+        id = data["_id"]
+        isSuccess = US.scheduler.pop(id, "No data")
+        if isSuccess == "No data":
+            print("The Schedule does not exist")
+        else:
+            US.removeFromActiveScheduler(id) #Xóa ra khỏi active_scheduler khi cập nhật/ nếu thêm mới thì k có trong active nên k làm gì
+            US.updateActiveScheduler()
+            
+            print(f"Schedule {id} deleted.")
+        #US.predictTasks()
+        #print(US.active_scheduler)
+        return data['ack']
+    except json.JSONDecodeError:
+        print("Failed to decode payload")
 def getTime(type):
         # Get current time in seconds
         current_time = time.time()

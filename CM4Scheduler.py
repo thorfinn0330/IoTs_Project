@@ -3,7 +3,7 @@ from constants import *
 from userScheduler import*
 from MQTTClient import*
 from enum import Enum
-
+from serialCommunication import*
 from task import*
 relay_ON = [                                                                                                                                  
       None,
@@ -207,6 +207,7 @@ class FSM:
         # Simulate sending command and getting response
         if timeout != 0:
             self.scheduler.SCH_Add_Task(lambda: self.setTimeOut(), timeout* self.scheduler.TICK, 0)
+        ser.setDevice(id, state)
         print(f"Sending command to {'turn ON' if state else 'turn OFF'} relay {id}: {command}")
         response = True  # Replace with actual communication result
         return response
