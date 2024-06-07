@@ -17,6 +17,7 @@ class MQTTClientHelper:
         self.mqttClient.on_subscribe = self.subcribe
         self.mqttClient.connect()
         self.mqttClient.loop_background()
+        self.mqttClient.publish("schedule", "0")
                 
     def setFlag(self, state):
         self.isUpdated = state
