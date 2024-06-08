@@ -4,7 +4,7 @@ from constants import*
 import random
 class serialCommunication:
     def __init__(self):
-       
+
         self.portName = self.getPort()
         try:
             self.ser = serial.Serial(port=self.portName, baudrate=9600)
@@ -69,15 +69,15 @@ class serialCommunication:
         return self.readTemperature(), self.readMoisture()
     
 
-ser = serialCommunication() 
-# for i in range(1,9):
-#     serial.ser.setDevice(i, True)
-#     time.sleep(1)
-#     print(serial.ser.readAllSensors())
-#     time.sleep(1)
+UART = serialCommunication() 
+for i in range(1,9):
+    UART.ser.setDevice(i, True)
+    time.sleep(1)
+    print(serial.ser.readAllSensors())
+    time.sleep(1)
 
-# print("------------------")
-# for i in range(1,9):
-#     serial.ser.setDevice(i, False)
-#     time.sleep(1)
-#     print(serial.ser.readAllSensors())
+print("------------------")
+for i in range(1,9):
+    UART.ser.setDevice(i, False)
+    time.sleep(1)
+    print(serial.ser.readAllSensors())
