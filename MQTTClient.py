@@ -38,16 +38,18 @@ class MQTTClientHelper:
 
     def message(self, client, feed_id, payload):
         print("Received: " + payload + " , feed id: " + feed_id)
-        header = payload[0]
+        header = int(payload[0])
+        data = payload[2:]
+
         if header == HEADER_SERVER_SEND_TASK:
-            ack = handleData.handle_payload(payload[2:])
+            ack = handleData.handle_payload(data)
             self.mqttClient.publish("schedule", f"{HEADER_GATEWAY_SEND_ACK}:{ack}")
         elif header == HEADER_SERVER_DELETE_TASK:
-            ack = handleData.deleteSchedule(payload[2:])
+            ack = handleData.deleteSchedule(data)
             self.mqttClient.publish("schedule", f"{HEADER_GATEWAY_SEND_ACK}:{ack}")
 
     def publishSensorsValue(self):
-        temp, hum = ser.readAllSensors()        
+        temp, hum = RS485.readAllSensors()        
         message = f"{HEADER_GATEWAY_SEND_SENSOR_VALUE}:{temp}:{hum}"
         self.mqttClient.publish("schedule", message)
     def publishDoneTask(self, task):
@@ -55,8 +57,8 @@ class MQTTClientHelper:
         self.mqttClient.publish("schedule", message)            
     def publishState(self, task, key, isStart):
         _id = task["id"]
-        if key == "pump_in" or key == "pump_out":
-            value = task["water"]
+        if key == "pumpIn" or key == "pumpOut":
+            value = task["pumpIn"]
         else:
             value = task[key]
         

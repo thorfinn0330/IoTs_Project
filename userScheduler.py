@@ -18,9 +18,9 @@ class UserScheduler:
             [
                 handleData.estimateSchedule(copy.deepcopy(schedule))
                 for schedule in self.scheduler.values()
-                if schedule["isActive"] == "True" and 
+                if schedule["isActive"] == "1" and 
                 schedule["isDone"] == False and
-                handleData.compare_times(schedule["startTime"], handleData.getTime("string")) and
+                schedule["startTime"] >= handleData.getTime("int") and
                 handleData.estimateSchedule(schedule)['loads'] > 0 and
                 schedule['_id'] not in existing_schedules
             ],
@@ -37,6 +37,13 @@ class UserScheduler:
         self.active_scheduler = [schedule for schedule in self.active_scheduler if schedule['_id'] != schedule_id]
     def addToActiveScheduler(self, schedule):
         self.active_scheduler.append(handleData.estimateSchedule(copy.deepcopy(schedule)))
+        self.active_scheduler = sorted(self.active_scheduler, key=lambda schedule: schedule["priority"])
+    def addOneShotScheduler(self, schedule):
+        schedule = self.active_scheduler.append(handleData.estimateSchedule(copy.deepcopy(schedule)))
+        schedule["priority"] = 0
+        self.active_scheduler.append(schedule)
+        self.active_scheduler = sorted(self.active_scheduler, key=lambda schedule: schedule["priority"])
+
     
     def updatePredictScheduler(self):
         self.predict_scheduler = []
@@ -87,26 +94,26 @@ class UserScheduler:
 
     def taskPerCycle(self, task, schedule, cycle):
         if cycle > 1:
-            rate = constants.TIMEOUT/schedule['water']
+            rate = constants.TIMEOUT/schedule['pumpIn']
         else:
             rate = 1
         task["flow1"] = schedule["flow1"]*rate
         task["flow2"] = schedule["flow2"]*rate
         task["flow3"] = schedule["flow3"]*rate
-        task["water"] = schedule["water"]*rate
+        task["pumpIn"] = schedule["pumpIn"]*rate
         task["id"] = schedule["_id"]
-        task["areaSelector"] = schedule["areaSelector"]
+        task["gardenName"] = schedule["gardenName"]
         task["schedulerName"] = schedule["schedulerName"]
         schedule["flow1"] -= task["flow1"]
         schedule["flow2"] -= task["flow2"]
         schedule["flow3"] -= task["flow3"]
-        schedule["water"] -= task["water"]
+        schedule["pumpIn"] -= task["pumpIn"]
     def makeTaskTemp(self, schedule):
-        task = {"flow1":0,"flow2":0,"flow3":0, "water":0}
-        if schedule["water"] < constants.TIMEOUT:
+        task = {"flow1":0,"flow2":0,"flow3":0, "pumpIn":0}
+        if schedule["pumpIn"] < constants.TIMEOUT:
             self.taskPerCycle(task, schedule, 1)
         else:
-            cycle = round(schedule["water"]/constants.TIMEOUT)
+            cycle = round(schedule["pumpIn"]/constants.TIMEOUT)
             self.taskPerCycle(task, schedule, cycle)
 
         return task
@@ -116,12 +123,12 @@ class UserScheduler:
         else:
             self.cnt+=1
             print("___________")
-            task = {"id":"", "schedulerName":"","flow1":0,"flow2":0,"flow3":0, "water":0}
+            task = {"id":"", "schedulerName":"","flow1":0,"flow2":0,"flow3":0, "pumpIn":0}
             i=0
             while self.active_scheduler[i]["loads"] - 0 <= 0.0001:
                 i+=1
             schedule = self.active_scheduler[i]
-            if schedule["water"] <= constants.TIMEOUT:
+            if schedule["pumpIn"] <= constants.TIMEOUT:
                 self.taskPerCycle(task, schedule, 1)
                 #update complete schedule
                 #

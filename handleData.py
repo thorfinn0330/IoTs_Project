@@ -10,19 +10,22 @@ def handle_payload(payload):
         data = json.loads(payload)
         id = data["_id"]
         data['isDone'] = False
-        US.scheduler[id] = data
-        # print("-----------ALL SCHEDULES-----------")
-        # print(US.scheduler)
-        US.removeFromActiveScheduler(id) #Xóa ra khỏi active_scheduler khi cập nhật/ nếu thêm mới thì k có trong active nên k làm gì
-        US.updateActiveScheduler()
-        # print("----------------ACTIVE--------------")
-        # print(US.active_scheduler)
-        US.updatePredictScheduler()
-        # print("----------------PREDICT--------------")
-        # print(US.predict_scheduler)
-        print(f"Schedule {id} added/updated.")
-        #US.predictTasks()
-        #print(US.active_scheduler)
+        if data['taskName'] == "oneshot" or data['stopTime'] == -1:
+            US.addOneShotScheduler(data)
+        else:
+            US.scheduler[id] = data
+            # print("-----------ALL SCHEDULES-----------")
+            # print(US.scheduler)
+            US.removeFromActiveScheduler(id) #Xóa ra khỏi active_scheduler khi cập nhật/ nếu thêm mới thì k có trong active nên k làm gì
+            US.updateActiveScheduler()
+            # print("----------------ACTIVE--------------")
+            # print(US.active_scheduler)
+            US.updatePredictScheduler()
+            # print("----------------PREDICT--------------")
+            # print(US.predict_scheduler)
+            print(f"Schedule {id} added/updated.")
+            #US.predictTasks()
+            #print(US.active_scheduler)
         return data['ack']
     except json.JSONDecodeError:
         print("Failed to decode payload")
@@ -59,7 +62,7 @@ def getTime(type):
 
         #print(time_string)  # Output: Current hour:minute in 00:00 format
         if type == "int":
-            return hour, minute
+            return hour*60 + minute
         elif type == "string":
             return time_string
 
@@ -75,17 +78,16 @@ def compare_times(start_time, stop_time):
     return start_time_in_minutes <= stop_time_in_minutes
 
 def calculate_loads(schedule):
-    schedule["loads"] = schedule["flow1"]*constants.TIME_FLOW1 + schedule["flow2"]*constants.TIME_FLOW2 + schedule["flow3"]*constants.TIME_FLOW3 + schedule["water"]*constants.TIME_PUMP*2
+    schedule["loads"] = schedule["flow1"]*constants.TIME_FLOW1 + schedule["flow2"]*constants.TIME_FLOW2 + schedule["flow3"]*constants.TIME_FLOW3 + schedule["pumpIn"]*constants.TIME_PUMP*2
 
 def calculate_priority(schedule):
-    h, m = getTime("int")
-    sh, sm = schedule["stopTime"].split(":")
-    sh = int(sh)
-    sm = int(sm)
+    current_time = getTime("int")
+    stop_time = int(schedule["stopTime"])
+    
     #check 
-    schedule["priority"] = (sh-h)*3600 + (sm-m)*60 - schedule["loads"]
+    schedule["priority"] = (stop_time-current_time)*60 - schedule["loads"]
 def calculate_cycle(schedule):
-    schedule["cycle"] = round(schedule["water"]/constants.TIMEOUT)
+    schedule["cycle"] = round(schedule["pumpIn"]/constants.TIMEOUT)
 def estimateSchedule(schedule):
     calculate_loads(schedule)
     calculate_priority(schedule)

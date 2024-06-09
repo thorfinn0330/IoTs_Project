@@ -5,36 +5,6 @@ from MQTTClient import*
 from enum import Enum
 from serialCommunication import*
 from task import*
-relay_ON = [                                                                                                                                  
-      None,
-      [1, 6, 0, 0, 0, 255, 201, 138],  # Relay 1 ON
-      [2, 6, 0, 0, 0, 255, 201, 185],  # Relay 2 ON
-      [3, 6, 0, 0, 0, 255, 200, 104],  # Relay 3 ON
-      [4, 6, 0, 0, 0, 255, 201, 223],  # Relay 4 ON
-      [5, 6, 0, 0, 0, 255, 200, 14],   # Relay 5 ON
-      [6, 6, 0, 0, 0, 255, 200, 61],   # Relay 6 ON
-      [7, 6, 0, 0, 0, 255, 201, 236],  # Relay 7 ON
-      [8, 6, 0, 0, 0, 255, 201, 19],    # Relay 8 ON,
-    ]                                                                                                                                                  
-                                                                                                                                                       
-relay_OFF = [                                                                                                                                 
-      None,
-      [1, 6, 0, 0, 0, 0, 137, 202],    # Relay 1 OFF
-      [2, 6, 0, 0, 0, 0, 137, 249],    # Relay 2 OFF
-      [3, 6, 0, 0, 0, 0, 136, 40],     # Relay 3 OFF
-      [4, 6, 0, 0, 0, 0, 137, 159],    # Relay 4 OFF
-      [5, 6, 0, 0, 0, 0, 136, 78],     # Relay 5 OFF
-      [6, 6, 0, 0, 0, 0, 136, 125],    # Relay 6 OFF
-      [7, 6, 0, 0, 0, 0, 137, 172],    # Relay 7 OFF
-      [8, 6, 0, 0, 0, 0, 137, 83]      # Relay 8 OFF
-          ]
-
-def setDevice(id, state): 
-    if state == True:
-        print("--------", relay_ON[id], "--------")
-    else:
-        print("--------",relay_OFF[id], "--------")
-    print("Turn ", "On" if state == True else "Off", "RELAY ", id)
 
 class CM4Scheduler:
     TICK = 100
@@ -111,8 +81,8 @@ class FSM:
         self.t1 = task['flow1']
         self.t2 = task['flow2']
         self.t3 = task['flow3']
-        self.t4 = task['water']
-        self.selector = task['areaSelector']
+        self.t4 = task['pumpIn']
+        self.selector = task['gardenName']
 
     def process(self):
         if self.timeout == True:
@@ -148,10 +118,10 @@ class FSM:
                 self.scheduler.SCH_Add_Task(lambda: self.setDevice(3, False,0), 0, 0)
 
                 self.scheduler.SCH_Add_Task(lambda: self.setDevice(7, True, self.t4), 0, 0)
-                mqttClientHelper.publishState(self.task, "pump_in", True)
+                mqttClientHelper.publishState(self.task, "pumpIn", True)
         elif self.state == PUMP_IN :
             # if self.success:
-                mqttClientHelper.publishState(self.task, "pump_in", False)
+                mqttClientHelper.publishState(self.task, "pumpIn", False)
 
                 self.scheduler.SCH_Add_Task(lambda: self.setDevice(7, False,0), 0, 0)
                 self.scheduler.SCH_Add_Task(lambda: self.setDevice(self.selector, True, 1), 0, 0)
@@ -160,10 +130,10 @@ class FSM:
             # if self.success:
                 self.scheduler.SCH_Add_Task(lambda: self.setDevice(self.selector, False,0), 0, 0)
                 self.scheduler.SCH_Add_Task(lambda: self.setDevice(8, True, self.t4), 0, 0)
-                mqttClientHelper.publishState(self.task, "pump_out", True)
+                mqttClientHelper.publishState(self.task, "pumpOut", True)
         elif self.state == PUMP_OUT :
             # if self.success:
-                mqttClientHelper.publishState(self.task, "pump_out", False)
+                mqttClientHelper.publishState(self.task, "pumpOut", False)
                 self.scheduler.SCH_Add_Task(lambda: self.setDevice(8, False,0), 0, 0)
                 self.success = True
                 self.scheduler.SCH_Add_Task(lambda: self.scheduler.setState(True), 0, 0)
@@ -207,7 +177,7 @@ class FSM:
         # Simulate sending command and getting response
         if timeout != 0:
             self.scheduler.SCH_Add_Task(lambda: self.setTimeOut(), timeout* self.scheduler.TICK, 0)
-        ser.setDevice(id, state)
+        RS485.setDevice(id, state)
         print(f"Sending command to {'turn ON' if state else 'turn OFF'} relay {id}: {command}")
         response = True  # Replace with actual communication result
         return response
@@ -219,7 +189,7 @@ class FSM:
 
     def error(self, message):
         print(message)
-        self.state = 5  # Terminate the FSM
+        self.state = 8  # Terminate the FSM
 
 
 def add_new_fsm_task(scheduler, task):
@@ -229,7 +199,7 @@ def add_new_fsm_task(scheduler, task):
 scheduler = CM4Scheduler()
 
 # # Initial task
-# task = {"flow1": 1, "flow2": 2, "flow3": 3, "water": 2.5}
+# task = {"flow1": 1, "flow2": 2, "flow3": 3, "pumpIn": 2.5}
 # scheduler = CM4Scheduler()
 # add_new_fsm_task(scheduler, task)
 
