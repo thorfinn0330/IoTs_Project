@@ -4,29 +4,56 @@ import constants
 import math
 from userScheduler import *
 
+def processParameter(schedule):
+    # Dictionary to map garden names to relay codes
+    garden_name_to_code = {
+        "farm1": 4,
+        "farm2": 5,
+        "farm3": 6
+    }
+    
+    # Change garden name to relay code
+    schedule["gardenName"] = garden_name_to_code.get(schedule["gardenName"], schedule["gardenName"])
+    
+    # List of keys to ensure are integers
+    int_keys = ["flow1", "flow2", "flow3", "pumpIn", "startTime", "stopTime"]
+    
+    # Ensure parameter true data type
+    for key in int_keys:
+        schedule[key] = int(schedule[key])
+
+
 
 def handle_payload(payload):
     try:
-        data = json.loads(payload)
+        data = json.loads(payload)                                                                                                                     
         id = data["_id"]
         data['isDone'] = False
-        if data['taskName'] == "oneshot" or data['stopTime'] == -1:
-            US.addOneShotScheduler(data)
+                                                                                                                                                       
+        processParameter(data)                                                                                                               
+                                                                                                                                                       
+        if data['schedulerName'] == "oneshot" or data['stopTime'] == -1:
+            US.addOneShotScheduler(data)                                                                                                               
+            US.scheduler[id] = data                                                                                                                    
         else:
-            US.scheduler[id] = data
+            US.scheduler[id] = data                                                                                                                    
             # print("-----------ALL SCHEDULES-----------")
             # print(US.scheduler)
             US.removeFromActiveScheduler(id) #Xóa ra khỏi active_scheduler khi cập nhật/ nếu thêm mới thì k có trong active nên k làm gì
-            US.updateActiveScheduler()
+            US.updateActiveScheduler()                                                                                                                 
             # print("----------------ACTIVE--------------")
             # print(US.active_scheduler)
-            US.updatePredictScheduler()
+            US.updatePredictScheduler()                                                                                                                
             # print("----------------PREDICT--------------")
             # print(US.predict_scheduler)
             print(f"Schedule {id} added/updated.")
             #US.predictTasks()
             #print(US.active_scheduler)
-        return data['ack']
+        try:
+            return data['ack']
+        except KeyError:
+            return "None"                                                                     
+        
     except json.JSONDecodeError:
         print("Failed to decode payload")
 def deleteSchedule(payload):
@@ -43,7 +70,10 @@ def deleteSchedule(payload):
             print(f"Schedule {id} deleted.")
         #US.predictTasks()
         #print(US.active_scheduler)
-        return data['ack']
+        try:
+            return data['ack']
+        except KeyError:
+            return "None" 
     except json.JSONDecodeError:
         print("Failed to decode payload")
 def getTime(type):
@@ -89,7 +119,10 @@ def calculate_priority(schedule):
 def calculate_cycle(schedule):
     schedule["cycle"] = round(schedule["pumpIn"]/constants.TIMEOUT)
 def estimateSchedule(schedule):
-    calculate_loads(schedule)
-    calculate_priority(schedule)
-    calculate_cycle(schedule)
+    calculate_loads(schedule)                                                                                                                          
+    if schedule["schedulerName"] == "oneshot":
+        schedule["priority"] = 0
+    else:
+        calculate_priority(schedule)                                                                                                                   
+    calculate_cycle(schedule)                                                                                                                          
     return schedule

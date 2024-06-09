@@ -43,10 +43,12 @@ class MQTTClientHelper:
 
         if header == HEADER_SERVER_SEND_TASK:
             ack = handleData.handle_payload(data)
-            self.mqttClient.publish("schedule", f"{HEADER_GATEWAY_SEND_ACK}:{ack}")
+            if ack != "None":
+                self.mqttClient.publish("schedule", f"{HEADER_GATEWAY_SEND_ACK}:{ack}")
         elif header == HEADER_SERVER_DELETE_TASK:
             ack = handleData.deleteSchedule(data)
-            self.mqttClient.publish("schedule", f"{HEADER_GATEWAY_SEND_ACK}:{ack}")
+            if ack != "None":
+                self.mqttClient.publish("schedule", f"{HEADER_GATEWAY_SEND_ACK}:{ack}")
 
     def publishSensorsValue(self):
         temp, hum = RS485.readAllSensors()        
