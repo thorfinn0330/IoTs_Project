@@ -34,7 +34,6 @@ def handle_payload(payload):
                                                                                                                                                        
         if data['schedulerName'] == "oneshot" or data['stopTime'] == -1:
             US.addOneShotScheduler(data)                                                                                                               
-            US.scheduler[id] = data                                                                                                                    
         else:
             US.scheduler[id] = data                                                                                                                    
             # print("-----------ALL SCHEDULES-----------")

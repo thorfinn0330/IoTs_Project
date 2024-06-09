@@ -13,7 +13,8 @@ class UserScheduler:
         
     def updateActiveScheduler(self):
         existing_schedules = {schedule['_id'] for schedule in self.active_scheduler}
-        print("exist", existing_schedules)
+        existing_schedules2 = {schedule['schedulerName'] for schedule in self.active_scheduler}
+        print("exist", existing_schedules2)
         new_schedules = sorted(
             [
                 handleData.estimateSchedule(copy.deepcopy(schedule))
@@ -39,7 +40,7 @@ class UserScheduler:
         self.active_scheduler.append(handleData.estimateSchedule(copy.deepcopy(schedule)))
         self.active_scheduler = sorted(self.active_scheduler, key=lambda schedule: schedule["priority"])
     def addOneShotScheduler(self, schedule):
-        schedule = self.active_scheduler.append(handleData.estimateSchedule(copy.deepcopy(schedule)))
+        schedule = handleData.estimateSchedule(copy.deepcopy(schedule))
         schedule["priority"] = 0
         self.active_scheduler.append(schedule)
         self.active_scheduler = sorted(self.active_scheduler, key=lambda schedule: schedule["priority"])
