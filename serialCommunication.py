@@ -47,7 +47,8 @@ class serialCommunication:
             print("Turn OFF Relay ", id, ": ", relay_OFF[id], "--------")
             self.ser.write(relay_OFF[id])
         time.sleep(0.1)
-        print("Result: ", self.readData())
+        result = self.readData()
+        return (state == True and result == 255) or (state == False and result == 0)
 
     def readTemperature(self):
         # return random.randint(20,40)
@@ -68,6 +69,8 @@ class serialCommunication:
     def readAllSensors(self):
         return self.readTemperature(), self.readMoisture()
     
+    def readSonarSensor(self):
+        return 0
 
 RS485 = serialCommunication() 
 # for i in range(1,9):

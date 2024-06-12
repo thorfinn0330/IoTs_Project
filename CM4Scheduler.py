@@ -87,84 +87,86 @@ class FSM:
     def process(self):
         if self.timeout == True:
             self.timeout = False
+            # throw error when have sensors
+
+        # START CYCLE
         if self.state == INIT:
-            # self.success = self.setDevice(1, True, self.t1)
+            
             self.scheduler.SCH_Add_Task(US.startTask, 0,0)
             self.scheduler.SCH_Add_Task(lambda: self.scheduler.setState(False), 0, 0)
 
             self.scheduler.SCH_Add_Task(lambda: self.setDevice(1, True,self.t1), 0, 0)
             mqttClientHelper.publishState(self.task, "flow1", True)
 
+        #MIXER 1
         elif self.state == MIXER_1 :
-            # if self.success:
+            if self.success:
                 mqttClientHelper.publishState(self.task, "flow1", False)
                 self.scheduler.SCH_Add_Task(lambda: self.setDevice(1, False,0), 0, 0)
-
                 self.scheduler.SCH_Add_Task(lambda: self.setDevice(2, True, self.t2), 0, 0)
                 mqttClientHelper.publishState(self.task, "flow2", True)
-
+            else:
+                self.error("Failed in MIXER 1")
+        
+        #MIXER 2
         elif self.state == MIXER_2 :
-            # if self.success:
+            if self.success:
                 mqttClientHelper.publishState(self.task, "flow2", False)
-
                 self.scheduler.SCH_Add_Task(lambda: self.setDevice(2, False,0), 0, 0)
-
                 self.scheduler.SCH_Add_Task(lambda: self.setDevice(3, True, self.t3), 0, 0)
                 mqttClientHelper.publishState(self.task, "flow3", True)
+            else:
+                self.error("Failed in MIXER 2")
+
+        #MIXER 3 
         elif self.state == MIXER_3:
-            # if self.success:
+            if self.success:
                 mqttClientHelper.publishState(self.task, "flow3", False)
-
-                self.scheduler.SCH_Add_Task(lambda: self.setDevice(3, False,0), 0, 0)
-
+                self.scheduler.SCH_Add_Task(lambda: self.setDevice(3, False,0), 0, 0) 
                 self.scheduler.SCH_Add_Task(lambda: self.setDevice(7, True, self.t4), 0, 0)
                 mqttClientHelper.publishState(self.task, "pumpIn", True)
-        elif self.state == PUMP_IN :
-            # if self.success:
-                mqttClientHelper.publishState(self.task, "pumpIn", False)
+            else:
+                self.error("Failed in MIXER 3")
 
+        #PUMP IN
+        elif self.state == PUMP_IN :
+            if self.success:
+                mqttClientHelper.publishState(self.task, "pumpIn", False)
                 self.scheduler.SCH_Add_Task(lambda: self.setDevice(7, False,0), 0, 0)
                 self.scheduler.SCH_Add_Task(lambda: self.setDevice(self.selector, True, 1), 0, 0)
-                
+            else:
+                self.error("Failed in PUMP IN")
+
+        #AREA SELECTOR        
         elif self.state == SELECTOR :
-            # if self.success:
+            if self.success:
                 self.scheduler.SCH_Add_Task(lambda: self.setDevice(self.selector, False,0), 0, 0)
                 self.scheduler.SCH_Add_Task(lambda: self.setDevice(8, True, self.t4), 0, 0)
                 mqttClientHelper.publishState(self.task, "pumpOut", True)
+            else:
+                self.error("Failed in AREA SELECTOR")
+
+        #PUMP OUT
         elif self.state == PUMP_OUT :
-            # if self.success:
+            if self.success:
                 mqttClientHelper.publishState(self.task, "pumpOut", False)
                 self.scheduler.SCH_Add_Task(lambda: self.setDevice(8, False,0), 0, 0)
                 self.success = True
                 self.scheduler.SCH_Add_Task(lambda: self.scheduler.setState(True), 0, 0)
                 self.next_state()
-                
+            else:
+                self.error("Failed in PUMP OUT")
+
+        #END CYCLE
         elif self.state == FINAL :
-                self.scheduler.SCH_Add_Task(US.doneTask,0,0)
-                print("END TASK: ", self.task)
-                mqttClientHelper.publishDoneTask(self.task)
-                self.next_state()
-            #     self.success = self.setDevice(2, True, self.t2)
-            # else:
-            #     self.error("Failed to turn on Flow 1")
-        # elif self.state == 2:
-        #     if self.success:
-        #         self.scheduler.SCH_Add_Task(lambda: self.setDevice(2, False), 0, 0)
-        #         self.success = self.setDevice(3, True, self.t3)
-        #     else:
-        #         self.error("Failed to turn on Flow 2")
-        # elif self.state == 3:
-        #     if self.success:
-        #         self.scheduler.SCH_Add_Task(lambda: self.setDevice(3, False), 0, 0)
-        #         self.success = self.setDevice(8, True, self.t4)
-        #     else:
-        #         self.error("Failed to turn on Flow 3")
-        # elif self.state == 4:
-        #     if self.success:
-        #         self.scheduler.SCH_Add_Task(lambda: self.setDevice(8, False), 0, 0)
-        #         self.state = 5
-        #     else:
-        #         self.error("Failed to turn on Pump")
+            self.scheduler.SCH_Add_Task(US.doneTask,0,0)
+            print("END TASK: ", self.task)
+            # mqttClientHelper.publishDoneTask(self.task)
+            self.next_state()
+        elif self.state == ERROR :
+            print(f"Task {self.task} not completed !!!")
+            return
+
     def setTimeOut(self):
         self.timeout = True
         self.next_state()
@@ -177,10 +179,9 @@ class FSM:
         # Simulate sending command and getting response
         if timeout != 0:
             self.scheduler.SCH_Add_Task(lambda: self.setTimeOut(), timeout* self.scheduler.TICK, 0)
-        RS485.setDevice(id, state)
+        
         print(f"Sending command to {'turn ON' if state else 'turn OFF'} relay {id}: {command}")
-        response = True  # Replace with actual communication result
-        return response
+        self.success = RS485.setDevice(id, state)  # Replace with actual communication result
 
     def next_state(self):
         self.state += 1
@@ -189,7 +190,7 @@ class FSM:
 
     def error(self, message):
         print(message)
-        self.state = 8  # Terminate the FSM
+        self.state = ERROR  # Terminate the FSM
 
 
 def add_new_fsm_task(scheduler, task):
@@ -197,25 +198,3 @@ def add_new_fsm_task(scheduler, task):
     fsm.process()
 
 scheduler = CM4Scheduler()
-
-# # Initial task
-# task = {"flow1": 1, "flow2": 2, "flow3": 3, "pumpIn": 2.5}
-# scheduler = CM4Scheduler()
-# add_new_fsm_task(scheduler, task)
-
-# cnt = 0
-# isTask2= False
-# while cnt < 10000:  # Simulate 10 seconds of operation
-#     print(cnt / 10)
-#     scheduler.SCH_Update()
-#     scheduler.SCH_Dispatch_Tasks()
-#     time.sleep(0.1)
-#     cnt += 1
-#     if cnt % 10 == 0:
-#         print("---")
-#     if cnt >= 100 and isTask2 == False:
-#         task2 = {"flow1": 3, "flow2": 2, "flow3": 1, "water": 5}
-#         add_new_fsm_task(scheduler, task2)
-#         print("-------------------------------------")
-
-#         isTask2 = True
